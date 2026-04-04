@@ -29,3 +29,17 @@ A full-stack application that analyzes resumes (PDF), detects skills, and genera
 ---
 
 ## 📂 Project Structure
+resume-analyzer/
+│
+├── backend/
+│ ├── controllers/
+│ ├── services/
+│ ├── routes/
+│ ├── uploads/
+│ └── app.js
+│
+├── frontend/ (coming soon)
+│
+├── schema.sql
+├── .gitignore
+└── README.md
