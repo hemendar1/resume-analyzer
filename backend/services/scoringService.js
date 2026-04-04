@@ -1,27 +1,53 @@
 /**
- * Points awarded per detected skill.
+ * Skill categories with per-skill points and a category score cap.
  */
-const POINTS_PER_SKILL = 10;
+const SKILL_CATEGORIES = {
+  programming: {
+    skills: ["java", "python", "c++", "c#", "typescript", "kotlin", "swift"],
+    pointsPerSkill: 10,
+    cap: 30,
+  },
+  web: {
+    skills: ["react", "node", "angular", "vue", "html", "css", "javascript"],
+    pointsPerSkill: 8,
+    cap: 24,
+  },
+  database: {
+    skills: ["sql", "mongodb", "postgresql", "mysql", "redis"],
+    pointsPerSkill: 8,
+    cap: 16,
+  },
+  tools: {
+    skills: ["git", "docker", "kubernetes", "jenkins", "aws", "linux"],
+    pointsPerSkill: 5,
+    cap: 15,
+  },
+  soft: {
+    skills: ["communication", "teamwork", "leadership", "problem-solving", "adaptability"],
+    pointsPerSkill: 3,
+    cap: 15,
+  },
+};
 
 /**
- * Maximum achievable score, regardless of skill count.
- */
-const MAX_SCORE = 100;
-
-/**
- * Calculates a resume score based on detected skills.
- * @param {string[]} detectedSkills - Array of matched skills from skillService
- * @returns {number} - Final score, capped at MAX_SCORE
- * @throws {Error} - If detectedSkills is not an array
+ * Calculates a weighted resume score from detected skills.
  */
 const calculateScore = (detectedSkills) => {
   if (!Array.isArray(detectedSkills)) {
     throw new Error("detectedSkills must be an array.");
   }
 
-  const rawScore = detectedSkills.length * POINTS_PER_SKILL;
+  const skillSet = new Set(detectedSkills.map((s) => s.toLowerCase()));
 
-  return Math.min(rawScore, MAX_SCORE);
+  const total = Object.values(SKILL_CATEGORIES).reduce((sum, category) => {
+    const raw = category.skills
+      .filter((skill) => skillSet.has(skill))
+      .length * category.pointsPerSkill;
+
+    return sum + Math.min(raw, category.cap);
+  }, 0);
+
+  return Math.round(total);
 };
 
-module.exports = { calculateScore, POINTS_PER_SKILL, MAX_SCORE };
+module.exports = { calculateScore, SKILL_CATEGORIES };

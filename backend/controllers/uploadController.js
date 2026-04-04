@@ -2,11 +2,6 @@ const path = require("path");
 const { saveResumeMetadata, getAllResumes, extractTextFromPDF } = require("../services/uploadService");
 const { detectSkills } = require("../services/skillService");
 const { calculateScore } = require("../services/scoringService");
-/**
- * POST /api/upload
- * Handles resume file upload and stores metadata in DB.
- */
-
 
 const uploadResume = async (req, res) => {
   try {
@@ -16,41 +11,57 @@ const uploadResume = async (req, res) => {
       return res.status(400).json({ success: false, message: "No file uploaded." });
     }
 
-    console.log("File uploaded:", req.file.path);
-
     let extractedText = null;
     let skills = [];
     let score = 0;
+    let extractedEmail = null;
+    let extractedName = req.file.originalname; // ✅ ADDED (fallback)
 
-    // ✅ Step 1: Extract → Skills → Score
     if (req.file.mimetype === "application/pdf") {
-      console.log("Extracting text...");
       extractedText = await extractTextFromPDF(req.file.path);
-      console.log("Extraction done");
 
-      skills = detectSkills(extractedText);
-      console.log("Skills extracted:", skills);
+      if (!extractedText) {
+        return res.status(400).json({
+          success: false,
+          message: "Could not extract text from PDF",
+        });
+      }
 
+      // ✅ NAME EXTRACTION (ADDED)
+      const lines = extractedText
+        .split("\n")
+        .map(line => line.trim())
+        .filter(Boolean);
+
+      extractedName = lines[0];
+
+      // ✅ EMAIL (existing logic untouched)
+      const emailRegex = /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/i;
+      const emailMatch = extractedText.match(emailRegex);
+      extractedEmail = emailMatch ? emailMatch[0] : null;
+
+      if (!extractedEmail) {
+        return res.status(400).json({
+          success: false,
+          message: "Email not found in resume",
+        });
+      }
+
+      skills = detectSkills(extractedText).map(s => s.toLowerCase());
       score = calculateScore(skills);
-      console.log("Score calculated:", score);
     }
 
-    // ✅ Step 2: Now create fileData
     const fileData = {
-      originalName: req.file.originalname,
-      storedName: req.file.filename,
-      filePath: req.file.path,
-      mimeType: req.file.mimetype,
-      size: req.file.size,
+      originalName: extractedName, // ✅ CHANGED
+      email: extractedEmail,
+      resumeText: extractedText,
       skills,
       score,
+      feedbackText: null,
     };
 
-    // ✅ Step 3: Save to DB
     const insertedId = await saveResumeMetadata(fileData);
-    console.log("Saved to DB");
 
-    // ✅ Step 4: Response
     return res.status(201).json({
       success: true,
       message: "Resume uploaded successfully.",
@@ -71,6 +82,7 @@ const uploadResume = async (req, res) => {
     });
   }
 };
+
 const listResumes = async (req, res) => {
   try {
     const resumes = await getAllResumes();
