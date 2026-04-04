@@ -1,23 +1,31 @@
-# Resume Analyzer & Scoring System
+# 📄 Resume Analyzer & Scoring System
 
-## Tech Stack
+A full-stack application that analyzes resumes (PDF), detects skills, and generates a score based on predefined criteria.
+
+---
+
+## 🚀 Features
+
+- 📤 Upload resume (PDF)
+- 📑 Extract text from PDF
+- 🧠 Detect skills using regex
+- 📊 Calculate score (skill-based)
+- 💾 Store results in MySQL database
+- 🔗 REST API support
+
+---
+
+## 🛠 Tech Stack
+
+### Backend
 - Node.js
-- Express
+- Express.js
+- Multer (file upload)
+- pdf-parse (text extraction)
+
+### Database
 - MySQL
 
-## Features
-- Resume upload (PDF)
-- Text extraction
-- Skill detection
-- Score calculation
+---
 
-## Setup
-
-1. Install dependencies:
-   npm install
-
-2. Setup database:
-   Run schema.sql
-
-3. Start server:
-   npm start
+## 📂 Project Structure
