@@ -29,17 +29,40 @@ A full-stack application that analyzes resumes (PDF), detects skills, and genera
 ---
 
 ## 📂 Project Structure
-resume-analyzer/
+resume-system/
 │
 ├── backend/
-│ ├── controllers/
-│ ├── services/
-│ ├── routes/
-│ ├── uploads/
-│ └── app.js
+│   ├── config/
+│   │   └── db.js
+│   │
+│   ├── controllers/
+│   │   ├── searchController.js
+│   │   └── uploadController.js
+│   │
+│   ├── middleware/
+│   │   └── multerConfig.js
+│   │
+│   ├── models/
+│   │
+│   ├── routes/
+│   │
+│   ├── services/
+│   │   ├── scoringService.js
+│   │   ├── skillService.js
+│   │   └── uploadService.js
+│   │
+│   ├── uploads/
+│   │
+│   ├── .env
+│   ├── package.json
+│   ├── package-lock.json
+│   └── server.js
 │
-├── frontend/ (coming soon)
+├── frontend/
+│   ├── admin.html
+│   ├── admin.js
+│   ├── student.html
+│   └── student.js
 │
-├── schema.sql
 ├── .gitignore
 └── README.md
