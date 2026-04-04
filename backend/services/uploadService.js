@@ -47,17 +47,8 @@ const extractTextFromPDF = async (filePath) => {
  * @returns {Promise<number>} - Inserted record ID
  */
 const saveResumeMetadata = async (fileData) => {
-  const {
-    originalName,
-    storedName,
-    filePath,
-    mimeType,
-    size,
-    skills,
-    score,
-  } = fileData;
+  const { originalName, email, resumeText, skills, score, feedbackText } = fileData;
 
-  // Validate
   if (!Array.isArray(skills)) {
     throw new Error("fileData.skills must be an array.");
   }
@@ -66,16 +57,59 @@ const saveResumeMetadata = async (fileData) => {
     throw new Error("fileData.score must be a non-negative number.");
   }
 
-  const skillsString = skills.join(",");
+  // 🔥 normalize skills (IMPORTANT FIX)
+  const normalizedSkills = [...new Set(skills.map(s => s.trim().toLowerCase()))];
 
-  const [result] = await db.execute(
-    `INSERT INTO resumes
-     (original_name, stored_name, file_path, mime_type, size, skills, score, uploaded_at)
-     VALUES (?, ?, ?, ?, ?, ?, ?, NOW())`,
-    [originalName, storedName, filePath, mimeType, size, skillsString, score]
-  );
+  const connection = await db.getConnection();
 
-  return result.insertId;
+  try {
+    await connection.beginTransaction();
+
+    // 1. Insert student
+    const [studentResult] = await connection.execute(
+      `INSERT INTO Students (name, email, resume_text, resume_score, feedback_text)
+VALUES (?, ?, ?, ?, ?)
+ON DUPLICATE KEY UPDATE
+  name = VALUES(name),
+  resume_text = VALUES(resume_text),
+  resume_score = VALUES(resume_score),
+  feedback_text = VALUES(feedback_text)`,
+      [originalName, email || null, resumeText, score, feedbackText || null]
+    );
+
+    const studentId = studentResult.insertId;
+
+    // 2. Insert skills + mapping
+    for (const skillName of normalizedSkills) {
+      await connection.execute(
+        `INSERT IGNORE INTO Skills (skill_name) VALUES (?)`,
+        [skillName]
+      );
+
+      const [rows] = await connection.execute(
+        `SELECT skill_id FROM Skills WHERE skill_name = ?`,
+        [skillName]
+      );
+
+      const skillId = rows[0].skill_id;
+
+      await connection.execute(
+        `INSERT IGNORE INTO Student_Skills (student_id, skill_id)
+         VALUES (?, ?)`,
+        [studentId, skillId]
+      );
+    }
+
+    await connection.commit();
+    connection.release();
+
+    return studentId;
+
+  } catch (err) {
+    await connection.rollback();
+    connection.release();
+    throw err;
+  }
 };
 
 /**
@@ -84,8 +118,19 @@ const saveResumeMetadata = async (fileData) => {
  */
 const getAllResumes = async () => {
   const [rows] = await db.execute(
-    `SELECT id, original_name, file_path, mime_type, size, skills, score, uploaded_at
-     FROM resumes ORDER BY uploaded_at DESC`
+    `SELECT
+       s.student_id,
+       s.name,
+       s.email,
+       s.resume_score,
+       s.feedback_text,
+       s.created_at,
+       GROUP_CONCAT(sk.skill_name ORDER BY sk.skill_name SEPARATOR ', ') AS skills
+     FROM Students s
+     LEFT JOIN Student_Skills ss ON s.student_id = ss.student_id
+     LEFT JOIN Skills sk         ON ss.skill_id  = sk.skill_id
+     GROUP BY s.student_id
+     ORDER BY s.created_at DESC`
   );
   return rows;
 };

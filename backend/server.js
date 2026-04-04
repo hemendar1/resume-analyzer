@@ -21,3 +21,6 @@ app.listen(PORT, () => {
 
 const uploadRoutes = require("./routes/uploadRoutes");
 app.use("/api/upload", uploadRoutes);
+
+const searchRoutes = require("./routes/searchRoutes");
+app.use('/api', searchRoutes);
