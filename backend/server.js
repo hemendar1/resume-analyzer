@@ -1,3 +1,4 @@
+console.log("🚀 Server starting...");
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '.env') });
 
@@ -32,4 +33,12 @@ app.use("/api/skills", skillsRoutes);
 // ── Start Server ───────────────────────────────────────
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
+});
+
+process.on("uncaughtException", (err) => {
+  console.error("❌ UNCAUGHT EXCEPTION:", err);
+});
+
+process.on("unhandledRejection", (err) => {
+  console.error("❌ UNHANDLED REJECTION:", err);
 });
