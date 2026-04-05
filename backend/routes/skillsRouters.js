@@ -1,6 +1,6 @@
 const express = require("express");
 const router = express.Router();
-const { getAllSkills } = require("../controllers/temp");
+const { getAllSkills } = require("../controllers/skillsController");
 
 // GET /api/skills
 router.get("/", getAllSkills);
