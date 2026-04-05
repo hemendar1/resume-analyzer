@@ -8,19 +8,28 @@ require('./config/db');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-app.use(cors());
+// ✅ Updated CORS (no logic change, just explicit config)
+app.use(cors({
+  origin: "*"
+}));
+
 app.use(express.json());
 
 app.get('/', (req, res) => {
   res.send('API Running');
 });
 
-app.listen(PORT, () => {
-  console.log(`Server listening on port ${PORT}`);
-});
-
+// ── Routes ─────────────────────────────────────────────
 const uploadRoutes = require("./routes/uploadRoutes");
 app.use("/api/upload", uploadRoutes);
 
 const searchRoutes = require("./routes/searchRoutes");
 app.use('/api', searchRoutes);
+
+const skillsRoutes = require("./routes/Skillsroutes");
+app.use("/api/skills", skillsRoutes);
+
+// ── Start Server ───────────────────────────────────────
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});

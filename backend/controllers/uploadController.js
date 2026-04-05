@@ -1,7 +1,7 @@
 const path = require("path");
 const { saveResumeMetadata, getAllResumes, extractTextFromPDF } = require("../services/uploadService");
 const { detectSkills } = require("../services/skillService");
-const { calculateScore } = require("../services/scoringService");
+const { calculateFinalScore, getScoreBreakdown } = require("../services/scoringService");
 
 const uploadResume = async (req, res) => {
   try {
@@ -14,8 +14,10 @@ const uploadResume = async (req, res) => {
     let extractedText = null;
     let skills = [];
     let score = 0;
+    let decision = null;
+    let breakdown = {};
     let extractedEmail = null;
-    let extractedName = req.file.originalname; // ✅ ADDED (fallback)
+    let extractedName = req.file.originalname;
 
     if (req.file.mimetype === "application/pdf") {
       extractedText = await extractTextFromPDF(req.file.path);
@@ -27,15 +29,23 @@ const uploadResume = async (req, res) => {
         });
       }
 
-      // ✅ NAME EXTRACTION (ADDED)
+      // ✅ TASK 3 — Safety check: ensure extracted text is not empty
+      if (!extractedText.trim()) {
+        return res.status(400).json({
+          success: false,
+          message: "Resume text extraction failed",
+        });
+      }
+
+      // Name extraction — first non-empty line
       const lines = extractedText
         .split("\n")
-        .map(line => line.trim())
+        .map((line) => line.trim())
         .filter(Boolean);
 
       extractedName = lines[0];
 
-      // ✅ EMAIL (existing logic untouched)
+      // Email extraction
       const emailRegex = /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/i;
       const emailMatch = extractedText.match(emailRegex);
       extractedEmail = emailMatch ? emailMatch[0] : null;
@@ -47,16 +57,29 @@ const uploadResume = async (req, res) => {
         });
       }
 
-      skills = detectSkills(extractedText).map(s => s.toLowerCase());
-      score = calculateScore(skills);
+      // Skill detection and scoring
+      skills = detectSkills(extractedText).map((s) => s.toLowerCase());
+
+      // ✅ TASK 2 — Debug logs before scoring
+      console.log("Extracted text length:", extractedText?.length);
+      console.log("Detected skills:", skills);
+
+      const result = calculateFinalScore(skills, extractedText);
+      score = result.score;
+      decision = result.decision;
+
+      // ✅ TASK 1 — Breakdown called with extractedText
+      breakdown = getScoreBreakdown(skills, extractedText);
     }
 
     const fileData = {
-      originalName: extractedName, // ✅ CHANGED
+      originalName: extractedName,
       email: extractedEmail,
       resumeText: extractedText,
       skills,
       score,
+      decision,
+      breakdown,
       feedbackText: null,
     };
 
@@ -70,6 +93,14 @@ const uploadResume = async (req, res) => {
         extractedText,
         skills,
         score,
+        decision,
+        breakdown,
+        summary: {
+          score,
+          decision,
+          breakdown,
+          skills,
+        },
       },
     });
 

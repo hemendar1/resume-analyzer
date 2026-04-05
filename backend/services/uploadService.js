@@ -47,7 +47,7 @@ const extractTextFromPDF = async (filePath) => {
  * @returns {Promise<number>} - Inserted record ID
  */
 const saveResumeMetadata = async (fileData) => {
-  const { originalName, email, resumeText, skills, score, feedbackText } = fileData;
+  const { originalName, email, resumeText, skills, score, decision, breakdown, feedbackText } = fileData;
 
   if (!Array.isArray(skills)) {
     throw new Error("fileData.skills must be an array.");
@@ -57,7 +57,7 @@ const saveResumeMetadata = async (fileData) => {
     throw new Error("fileData.score must be a non-negative number.");
   }
 
-  // 🔥 normalize skills (IMPORTANT FIX)
+  // Normalize skills
   const normalizedSkills = [...new Set(skills.map(s => s.trim().toLowerCase()))];
 
   const connection = await db.getConnection();
@@ -67,14 +67,24 @@ const saveResumeMetadata = async (fileData) => {
 
     // 1. Insert student
     const [studentResult] = await connection.execute(
-      `INSERT INTO Students (name, email, resume_text, resume_score, feedback_text)
-VALUES (?, ?, ?, ?, ?)
+      `INSERT INTO Students (name, email, resume_text, resume_score, decision, breakdown, feedback_text)
+VALUES (?, ?, ?, ?, ?, ?, ?)
 ON DUPLICATE KEY UPDATE
-  name = VALUES(name),
-  resume_text = VALUES(resume_text),
+  name         = VALUES(name),
+  resume_text  = VALUES(resume_text),
   resume_score = VALUES(resume_score),
+  decision     = VALUES(decision),
+  breakdown    = VALUES(breakdown),
   feedback_text = VALUES(feedback_text)`,
-      [originalName, email || null, resumeText, score, feedbackText || null]
+      [
+        originalName,
+        email || null,
+        resumeText,
+        score,
+        decision || null,
+        breakdown ? JSON.stringify(breakdown) : null,
+        feedbackText || null,
+      ]
     );
 
     const studentId = studentResult.insertId;
