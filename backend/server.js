@@ -26,7 +26,7 @@ app.use("/api/upload", uploadRoutes);
 const searchRoutes = require("./routes/searchRoutes");
 app.use('/api', searchRoutes);
 
-const skillsRoutes = require("./routes/Skillsroutes");
+const skillsRoutes = require("./routes/temp");
 app.use("/api/skills", skillsRoutes);
 
 // ── Start Server ───────────────────────────────────────
