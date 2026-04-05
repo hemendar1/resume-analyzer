@@ -1,4 +1,4 @@
-const API_BASE = "https://resume-analyzer-production-54ee.up.railway.app/api/search";
+const API_BASE = "http://localhost:5000/api/search";
 
     // Allow pressing Enter to trigger search
     document.getElementById("skillInput").addEventListener("keydown", (e) => {

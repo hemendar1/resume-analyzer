@@ -1,4 +1,4 @@
-const API_URL = "https://your-backend.up.railway.app/api/upload";
+const API_URL = "http://localhost:5000/api/upload";
 let selectedFile = null;
 
 // ── Drag and drop ──────────────────────────────────────────────────────────
