@@ -5,6 +5,7 @@ const API_BASE = "http://localhost:5000/api/search";
       if (e.key === "Enter") search();
     });
 
+
     function setVisible(id, visible) {
       document.getElementById(id).classList.toggle("hidden", !visible);
     }
