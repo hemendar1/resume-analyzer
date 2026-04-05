@@ -1,10 +1,10 @@
-console.log("🚀 Server starting...");
+
 const path = require('path');
 require('dotenv').config({ path: path.join(__dirname, '.env') });
 
 const express = require('express');
 const cors = require('cors');
-
+require('./config/db');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -21,24 +21,16 @@ app.get('/', (req, res) => {
 });
 
 // ── Routes ─────────────────────────────────────────────
-//const uploadRoutes = require("./routes/uploadRoutes");
-//app.use("/api/upload", uploadRoutes);
+const uploadRoutes = require("./routes/uploadRoutes");
+app.use("/api/upload", uploadRoutes);
 
-//const searchRoutes = require("./routes/searchRoutes");
-//app.use('/api', searchRoutes);
+const searchRoutes = require("./routes/searchRoutes");
+app.use('/api', searchRoutes);
 
-const skillsRoutes = require("./routes/skillsRoutes");
+const skillsRoutes = require("./routes/skillsRouters");
 app.use("/api/skills", skillsRoutes);
 
 // ── Start Server ───────────────────────────────────────
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-});
-
-process.on("uncaughtException", (err) => {
-  console.error("❌ UNCAUGHT EXCEPTION:", err);
-});
-
-process.on("unhandledRejection", (err) => {
-  console.error("❌ UNHANDLED REJECTION:", err);
 });
