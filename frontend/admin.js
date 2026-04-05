@@ -1,4 +1,4 @@
-const API_BASE = "http://localhost:5000/api/search";
+const API_BASE = "https://resume-analyzer-q5gh.onrender.com/api/search";
 
     // Allow pressing Enter to trigger search
     document.getElementById("skillInput").addEventListener("keydown", (e) => {

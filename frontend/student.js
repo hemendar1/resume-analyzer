@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:5000/api/upload";
+const API_URL = "https://resume-analyzer-q5gh.onrender.com/api/upload";
 let selectedFile = null;
 
 // ── Drag and drop ──────────────────────────────────────────────────────────
