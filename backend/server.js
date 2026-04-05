@@ -21,11 +21,11 @@ app.get('/', (req, res) => {
 });
 
 // ── Routes ─────────────────────────────────────────────
-const uploadRoutes = require("./routes/uploadRoutes");
-app.use("/api/upload", uploadRoutes);
+//const uploadRoutes = require("./routes/uploadRoutes");
+//app.use("/api/upload", uploadRoutes);
 
-const searchRoutes = require("./routes/searchRoutes");
-app.use('/api', searchRoutes);
+//const searchRoutes = require("./routes/searchRoutes");
+//app.use('/api', searchRoutes);
 
 const skillsRoutes = require("./routes/skillsRoutes");
 app.use("/api/skills", skillsRoutes);
